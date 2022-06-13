@@ -17,8 +17,8 @@ from db import *
 from credentials import *
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from dotenv import load_dotenv
 
-SENDGRID_API_KEY="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"
 
 
 
@@ -54,7 +54,7 @@ def _():
             send_email(auth_code, email)
 
             # print("Before SMS send")
-            send_sms(auth_code, phone)
+            #end_sms(auth_code, phone)
 
             response.status = 200
         else:
@@ -130,6 +130,7 @@ def send_email(auth_code, email):
     #         print(ex)
     # return
 
+    load_dotenv()
     
     message = Mail(
         from_email=email,
@@ -138,15 +139,16 @@ def send_email(auth_code, email):
         html_content=f'Thank you for signing up at ZAQA! Your verification code is: {auth_code}')
 
     try:
-        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
         response = sg.send(message)
         print(response.status_code)
         print(response.body)
+        print(os.getenv('SENDGRID_API_KEY'))
         print("Email send successfully")
         return
 
     except Exception as e:
-        print(os.environ.get('SENDGRID_API_KEY'))
+        print(os.getenv('SENDGRID_API_KEY'))
         print("Error: {}".format(e))
 
 def send_sms(auth_code, phone):

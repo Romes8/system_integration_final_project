@@ -1,4 +1,5 @@
 from pyexpat.errors import messages
+import re
 from bottle import get, post, run, request, response, route, static_file, template
 import json
 from db import *
@@ -63,7 +64,10 @@ def _(topic,token, format):
         elif format == "xml":
             message = json.dumps(xmltodict.parse(message)["message"])
             message = message.strip('"')
-            print(message)
+        elif format == "csv":
+            message = cvs_convert(message)
+        elif format == "tsv":
+            message = tsv_convert(message)
 
         if create_message(topic, message):
             return "Message created"
@@ -91,7 +95,11 @@ def _(topic, message_id, token, format):
         elif format == "xml":
             message = json.dumps(xmltodict.parse(message)["message"])
             message = message.strip('"')
-            print(message)
+        elif format == "csv":
+            message = cvs_convert(message)
+        elif format == "tsv":
+            message = tsv_convert(message)
+
 
         if update_message(topic, message, message_id):
             return "Message updated"
@@ -144,6 +152,18 @@ def to_tsv(output):
         tsv_data += line + "\r\n"
         line = ""
     return tsv_data
+
+def cvs_convert(message):
+    csv = message.decode("utf-8")
+    data = csv.split(",")
+    return data[1]
+
+def tsv_convert(message):
+    tsv = message.decode("utf-8")
+    print(tsv)
+    data = tsv.split("    ")
+    print("Data: {}".format(data))
+    return data[1]
 
 run (host='127.0.0.1', port=4440, debug=True, reloader=True)
 
