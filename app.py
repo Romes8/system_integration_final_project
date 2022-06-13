@@ -15,6 +15,11 @@ import random
 import requests
 from db import *
 from credentials import *
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+SENDGRID_API_KEY="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"
+
 
 
 # Define the application
@@ -89,41 +94,60 @@ def _():
 
 
 def send_email(auth_code, email):
-    #possible to store in env.
+    #possible to store in env. 
 
-    password = "Romesdeveloper+"
+    # password = "Romesdeveloper+"
 
-    message = MIMEMultipart("alternative")
-    message["Subject"] = "Verification code"
-    message["From"] = email
-    message["To"] = email
+    # message = MIMEMultipart("alternative")
+    # message["Subject"] = "Verification code"
+    # message["From"] = email
+    # message["To"] = email
 
-    html = f"""\
-    <html>
-        <body>
-            <p>
-                Hi, Thank you for registering at ZAQA .
-                <br>
-                <h3>Your verfication code is: {auth_code}</h3>
-                <br>
-            </p>
-        </body>
-    </html>
-    """
-    part = MIMEText(html, "html")
+    # html = f"""\
+    # <html>
+    #     <body>
+    #         <p>
+    #             Hi, Thank you for reg istering at ZAQA .
+    #             <br>
+    #             <h3>Your verfication code is: {auth_code}</h3>
+    #             <br>
+    #         </p>
+    #     </body>
+    # </html>
+    # """
+    # part = MIMEText(html, "html")
             
-    message.attach(part)
+    # message.attach(part)
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        try:
-            server.login(email, password)
-            server.sendmail(email, email, message.as_string())
-            print("Email send successfully")
-        except Exception as ex:
-            print("Exception: ")
-            print(ex)
-    return
+    # context = ssl.create_default_context()
+    # with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+    #     try:
+    #         server.login(email, password)
+    #         server.sendmail(email, email, message.as_string())
+    #         print("Email send successfully")
+    #     except Exception as ex:
+    #         print("Exception: ")
+    #         print(ex)
+    # return
+
+    
+    message = Mail(
+        from_email=email,
+        to_emails=email,
+        subject='Verification code',
+        html_content=f'Thank you for signing up at ZAQA! Your verification code is: {auth_code}')
+
+    try:
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print("Email send successfully")
+        return
+
+    except Exception as e:
+        print(os.environ.get('SENDGRID_API_KEY'))
+        print("Error: {}".format(e))
 
 def send_sms(auth_code, phone):
     API_ENDPOINT = "https://fatsms.com/send-sms"
